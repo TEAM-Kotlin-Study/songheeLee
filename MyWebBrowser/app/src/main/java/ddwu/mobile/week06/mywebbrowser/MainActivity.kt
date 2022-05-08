@@ -4,11 +4,17 @@ import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.ContextMenu
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import com.survivalcoding.mywebbrowser.browse
+import com.survivalcoding.mywebbrowser.email
+import com.survivalcoding.mywebbrowser.sendSMS
+import com.survivalcoding.mywebbrowser.share
 import ddwu.mobile.week06.mywebbrowser.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -29,6 +35,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        //웹뷰 기본 설정
         binding.webView.loadUrl("https://www.google.com")
 
         binding.urlEditText.setOnEditorActionListener {_, actionId, _ ->
@@ -40,6 +47,9 @@ class MainActivity : AppCompatActivity() {
                 false
             }
         }
+
+        //컨텍스트 메뉴 등록
+        registerForContextMenu(binding.webView)
     }
 
     override fun onBackPressed(){
@@ -78,9 +88,46 @@ class MainActivity : AppCompatActivity() {
                 }
                 return true
             }
-            //문자 보내기? 이메일 보내기?
+            R.id.action_send_text -> {
+                binding.webView.url?.let { url->
+                    sendSMS("031-123-4567", url)
+                }
+                return true
+            }
+            R.id.action_email -> {
+                binding.webView.url?.let { url->
+                    email("text@example.com", "좋은 사이트", url)
+                }
+                return true
+            }
         }
 
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onCreateContextMenu(menu: ContextMenu?, v: View?,
+                                     menuInfo: ContextMenu.ContextMenuInfo?) {
+        super.onCreateContextMenu(menu, v, menuInfo)
+        menuInflater.inflate(R.menu.context, menu)
+    }
+
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+        when(item.itemId){
+            R.id.action_share -> {
+                binding.webView.url?.let { url->
+                    //페이지 공유
+                    share(url)
+                }
+                return true
+            }
+            R.id.action_browser -> {
+                binding.webView.url?.let { url->
+                    //기본 웹 브라우저에서 열기
+                    browse(url)
+                }
+                return true
+            }
+        }
+        return super.onContextItemSelected(item)
     }
 }
